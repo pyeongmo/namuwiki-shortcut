@@ -3,6 +3,7 @@
   "name": "namuwiki-extension",
   "version": "1.0",
   "description": "Focuses on the search bar when '/' is pressed on namu.wiki.",
+  "homepage_url": "https://github.com/pyeongmo/namuwiki-extension",
   "content_scripts": [
     {
       "matches": ["https://namu.wiki/*"],
