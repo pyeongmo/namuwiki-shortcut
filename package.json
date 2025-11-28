@@ -6,7 +6,7 @@
     "build": "esbuild content.ts --bundle --outfile=dist/content.bundle.js"
   },
   "devDependencies": {
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.27.0",
     "typescript": "^5.4.5"
   }
 }
