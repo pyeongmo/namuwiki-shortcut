@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Namuwiki Search Focus",
+  "version": "1.0",
+  "description": "Focuses on the search bar when '/' is pressed on namu.wiki.",
+  "content_scripts": [
+    {
+      "matches": ["https://namu.wiki/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
