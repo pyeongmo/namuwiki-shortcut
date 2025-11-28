@@ -1,3 +1,16 @@
-Get started by customizing your environment (defined in the .idx/dev.nix file) with the tools and IDE extensions you'll need for your project!
+# 나무위키 검색 포커스 크롬 확장 프로그램
 
-Learn more at https://developers.google.com/idx/guides/customize-idx-env
+이 크롬 확장 프로그램은 namu.wiki에서 `/` 키를 눌러 검색창에 빠르게 포커스할 수 있도록 해줍니다.
+
+## 기능
+
+- namu.wiki의 모든 페이지에서 `/` 키를 누르면 즉시 검색창에 입력할 수 있습니다.
+
+## 설치 방법
+
+1. 이 저장소를 클론하거나 다운로드합니다.
+2. 크롬 브라우저를 열고 `chrome://extensions`로 이동합니다.
+3. 오른쪽 상단에서 "개발자 모드"를 활성화합니다.
+4. "압축해제된 확장 프로그램을 로드합니다." 버튼을 클릭합니다.
+5. 이 저장소를 클론하거나 다운로드한 디렉토리를 선택합니다.
+6. 이제 확장 프로그램이 설치되어 모든 namu.wiki 페이지에서 활성화됩니다.
