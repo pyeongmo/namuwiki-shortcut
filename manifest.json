@@ -7,7 +7,7 @@
   "content_scripts": [
     {
       "matches": ["https://namu.wiki/*"],
-      "js": ["dist/content.bundle.js"]
+      "js": ["content.bundle.js"]
     }
   ]
 }
