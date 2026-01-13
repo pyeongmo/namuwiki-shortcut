@@ -1,6 +1,6 @@
 {
   "name": "namuwiki-extension",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Improves namu.wiki by focusing the search bar with the '/' key and displaying footnotes inline on wide screens.",
   "scripts": {
     "build": "esbuild content.ts --bundle --outfile=dist/content.bundle.js && cp manifest.json dist/"

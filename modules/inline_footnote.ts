@@ -1,88 +1,121 @@
+const debouncedDisplayFootnotes = debounce(displayFootnotes, 200);
 
-const observer = new MutationObserver(displayFootnotes);
+const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+        if (entry.target === document.body) {
+            debouncedDisplayFootnotes();
+        }
+    }
+});
+
+resizeObserver.observe(document.body);
 
 function displayFootnotes() {
-  observer.disconnect();
+    document.querySelectorAll('.inline-footnote').forEach(el => el.remove());
 
-  document.querySelectorAll('.inline-footnote').forEach(el => el.remove());
+    if (window.innerWidth < 1024) {
+        setupFootnoteBackground(window.innerWidth);
+        return;
+    }
 
-  if (window.innerWidth < 1024) {
-      observer.observe(document.body, { childList: true, subtree: true });
-      return;
-  }
+    const $footnoteAnchors: NodeListOf<HTMLAnchorElement> = document.querySelectorAll('a[href^="#fn-"]');
 
-  const footnoteLinks: NodeListOf<HTMLAnchorElement> = document.querySelectorAll('a[href^="#fn-"]');
+    const contentMaxWidth = 1400;
+    const rightEmptyWidth = 320;
+    const leftPadding = 20;
+    const rightPaddingMax = 80;
+    const rightPaddingMin = 20;
 
-  const contentMaxWidth = 1400;
-  const rightEmptyWidth = 320;
-  const leftPadding = 20;
-  const rightPaddingMax = 80;
-  const rightPaddingMin = 20;
+    const contentWidth = Math.min(window.innerWidth, contentMaxWidth);
+    const rightPadding = Math.min(rightPaddingMax, Math.max(rightPaddingMin, window.innerWidth - contentWidth));
+    const contentRightEdge = (window.innerWidth / 2) + (contentWidth / 2) - rightEmptyWidth;
+    const noteLeftPosition = contentRightEdge - leftPadding;
+    const noteMaxWidth = window.innerWidth - noteLeftPosition - rightPadding;
 
-  const contentWidth = Math.min(window.innerWidth, contentMaxWidth);
+    setupFootnoteBackground(noteLeftPosition - 10);
 
-  const rightPadding = Math.min(rightPaddingMax, Math.max(rightPaddingMin, window.innerWidth - contentWidth));
+    let lastFootnoteBottom = 0;
 
-  const contentRightEdge = (window.innerWidth / 2) + (contentWidth / 2) - rightEmptyWidth;
+    $footnoteAnchors.forEach($a => {
+        try {
+            const targetId = $a.href.split('#')[1];
+            if (!targetId) return;
 
-  const noteLeftPosition = contentRightEdge - leftPadding;
+            const targetElement = document.getElementById(targetId);
+            if (!targetElement?.parentElement) return;
 
-  const noteMaxWidth = window.innerWidth - noteLeftPosition - rightPadding;
+            const $noteDiv = document.createElement('div');
+            $noteDiv.className = 'inline-footnote';
 
-  let lastFootnoteBottom = 0; 
+            const footnoteNumber = $a.innerText;
 
-  footnoteLinks.forEach(link => {
-      try {
-          const targetId = link.href.split('#')[1];
-          if (!targetId) return;
+            $noteDiv.innerHTML = `<b>${footnoteNumber}</b> ${targetElement.parentElement.innerHTML}`;
+            $noteDiv.querySelectorAll('a[href^="#rfn-"]').forEach(a => a.remove());
 
-          const targetElement = document.getElementById(targetId);
-          if (!targetElement?.parentElement) return;
+            Object.assign($noteDiv.style, {
+                position: 'absolute',
+                left: `${noteLeftPosition}px`,
+                maxWidth: `${noteMaxWidth}px`,
+                visibility: 'hidden',
+                backgroundColor: 'white',
+                border: '1px solid #ccc',
+                padding: '10px',
+                borderRadius: '5px',
+                fontSize: '14px',
+                lineHeight: '1.6',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                zIndex: 2,
+            });
 
-          const note = document.createElement('div');
-          note.className = 'inline-footnote';
+            document.body.appendChild($noteDiv);
 
-          const footnoteNumber = link.innerText;
+            let noteTop = $a.getBoundingClientRect().top + window.scrollY;
 
-          note.innerHTML = `<b>${footnoteNumber}</b> ${targetElement.parentElement.innerHTML}`;
-          note.querySelectorAll('a[href^="#rfn-"]').forEach(a => a.remove());
+            if (noteTop < lastFootnoteBottom) {
+                noteTop = lastFootnoteBottom;
+            }
 
-          Object.assign(note.style, {
-              position: 'absolute',
-              left: `${noteLeftPosition}px`,
-              maxWidth: `${noteMaxWidth}px`,
-              visibility: 'hidden', 
-              backgroundColor: 'white',
-              border: '1px solid #ccc',
-              padding: '10px',
-              borderRadius: '5px',
-              fontSize: '14px',
-              lineHeight: '1.6',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-          });
+            $noteDiv.style.top = `${noteTop}px`;
+            $noteDiv.style.visibility = 'visible';
 
-          document.body.appendChild(note);
+            lastFootnoteBottom = noteTop + $noteDiv.offsetHeight + 10;
 
-          let noteTop = link.getBoundingClientRect().top + window.scrollY;
-
-          if (noteTop < lastFootnoteBottom) {
-              noteTop = lastFootnoteBottom;
-          }
-
-          note.style.top = `${noteTop}px`;
-          note.style.visibility = 'visible';
-          
-          lastFootnoteBottom = noteTop + note.offsetHeight + 10;
-
-      } catch (e) {
-          console.error('Error displaying footnote:', e);
-      }
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
+        } catch (e) {
+            console.error('Error displaying footnote:', e);
+        }
+    });
 }
 
-window.addEventListener('load', displayFootnotes);
-window.addEventListener('resize', displayFootnotes);
+function debounce(func: (...args: any[]) => void, wait: number) {
+    let timeout: number | null = null;
+    return (...args: any[]) => {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+        timeout = setTimeout(() => func(...args), wait);
+    };
+}
 
-observer.observe(document.body, { childList: true, subtree: true });
+function setupFootnoteBackground(leftPosition: number = 0) {
+    const footnoteBackgroundId = 'footnote-bg';
+    let $div = document.getElementById(footnoteBackgroundId);
+
+    if (!$div) {
+        $div = document.createElement('div');
+        $div.id = footnoteBackgroundId;
+
+        Object.assign($div.style, {
+            position: 'fixed',
+            width: '50%',
+            height: 'calc(100vh - 100px)',
+            bottom: 0,
+            backgroundColor: '#f5f5f5',
+            zIndex: 1,
+        });
+
+        document.body.prepend($div);
+    }
+    $div.style.left = `${leftPosition}px`;
+
+    return $div;
+}
