@@ -9,6 +9,7 @@ const resizeObserver = new ResizeObserver((entries) => {
 });
 
 resizeObserver.observe(document.body);
+injectDarkModeStyles();
 
 function displayFootnotes() {
     document.querySelectorAll('.inline-footnote').forEach(el => el.remove());
@@ -52,19 +53,11 @@ function displayFootnotes() {
             $noteDiv.innerHTML = `<b>${footnoteNumber}</b> ${targetElement.parentElement.innerHTML}`;
             $noteDiv.querySelectorAll('a[href^="#rfn-"]').forEach(a => a.remove());
 
+            updateFootnoteStyle($noteDiv);
+
             Object.assign($noteDiv.style, {
-                position: 'absolute',
                 left: `${noteLeftPosition}px`,
                 maxWidth: `${noteMaxWidth}px`,
-                visibility: 'hidden',
-                backgroundColor: 'white',
-                border: '1px solid #ccc',
-                padding: '10px',
-                borderRadius: '5px',
-                fontSize: '14px',
-                lineHeight: '1.6',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                zIndex: 2,
             });
 
             document.body.appendChild($noteDiv);
@@ -96,6 +89,10 @@ function debounce(func: (...args: any[]) => void, wait: number) {
     };
 }
 
+function isDarkMode(): boolean {
+    return document.body.classList.contains('theseed-dark-mode');
+}
+
 function setupFootnoteBackground(leftPosition: number = 0) {
     const footnoteBackgroundId = 'footnote-bg';
     let $div = document.getElementById(footnoteBackgroundId);
@@ -103,19 +100,73 @@ function setupFootnoteBackground(leftPosition: number = 0) {
     if (!$div) {
         $div = document.createElement('div');
         $div.id = footnoteBackgroundId;
-
-        Object.assign($div.style, {
-            position: 'fixed',
-            width: '50%',
-            height: 'calc(100vh - 100px)',
-            bottom: 0,
-            backgroundColor: '#f5f5f5',
-            zIndex: 1,
-        });
-
         document.body.prepend($div);
     }
+
     $div.style.left = `${leftPosition}px`;
 
     return $div;
+}
+
+function updateFootnoteStyle($noteDiv: HTMLDivElement) {
+    if (isDarkMode()) {
+        Object.assign($noteDiv.style, {
+            backgroundColor: '#333',
+            color: '#f5f5f5',
+            border: '1px solid #555',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.5)',
+        });
+    } else {
+        Object.assign($noteDiv.style, {
+            backgroundColor: 'white',
+            color: 'black',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+        });
+    }
+}
+
+function injectDarkModeStyles() {
+    const styleId = 'dark-mode-styles';
+    // 이미 삽입된 스타일이 있으면 중복 삽입 방지
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+        body.theseed-dark-mode .inline-footnote {
+            background-color: #333;
+            color: #f5f5f5;
+            border: 1px solid #555;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theseed-dark-mode #footnote-bg {
+            background-color: #000;
+        }
+
+        .inline-footnote {
+            position: absolute;
+            z-index: 2;
+            visibility: hidden;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            line-height: 1.6;
+            background-color: white;
+            color: black;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #footnote-bg {
+            position: fixed;
+            z-index: 1;
+            background-color: #f5f5f5;
+            width: 50%;
+            height: calc(100vh - 100px);
+            bottom: 0;
+        }
+    `;
+    document.head.appendChild(style);
 }
